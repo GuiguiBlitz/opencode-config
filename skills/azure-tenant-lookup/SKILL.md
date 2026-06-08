@@ -62,7 +62,7 @@ no subscription access required.
    `.blob.core.windows.net` suffix if present).
 2. Run the lookup script:
    ```bash
-   bash /home/guigui/agents/skills/azure-tenant-lookup/scripts/find-tenant.sh <storage_account_name>
+   bash $HOME/agents/skills/azure-tenant-lookup/scripts/find-tenant.sh <storage_account_name>
    ```
 3. Parse the JSON payload returned on stdout.
 4. If `"error"` key is present in the JSON, report the error message verbatim
@@ -153,7 +153,7 @@ HTML login page render.
 "Which company owns the storage account `mystorageaccount`?"
 
 ### Expected Action Chain
-1. Run `bash /home/guigui/agents/skills/azure-tenant-lookup/scripts/find-tenant.sh mystorageaccount`
+1. Run `bash $HOME/agents/skills/azure-tenant-lookup/scripts/find-tenant.sh mystorageaccount`
 2. Parse JSON stdout.
 3. Render result table with disclaimer.
 

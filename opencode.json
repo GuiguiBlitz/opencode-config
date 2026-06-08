@@ -42,7 +42,7 @@
   "model": "llmproxy/vertex_ai/claude-sonnet-4-6",
   "skills": {
     "paths": [
-      "/home/guigui/agents/skills"
+      "{env:HOME}/agents/skills"
     ]
   }
 }

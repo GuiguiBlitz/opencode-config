@@ -21,7 +21,7 @@ This repo tracks two things:
 ```
 
 The `.gitignore` intentionally excludes everything except the above.
-All other directories under `/home/guigui/agents/` are project workspaces
+All other directories under `$HOME/agents/` are project workspaces
 and are not versioned here.
 
 ---
@@ -53,7 +53,7 @@ OpenCode loads skills from the path configured in `opencode.json`:
 
 ```json
 "skills": {
-  "paths": ["/home/guigui/agents/skills"]
+  "paths": ["$HOME/agents/skills"]
 }
 ```
 
@@ -115,7 +115,7 @@ Describe any setup the agent must perform before executing commands
 (authentication, env var checks, etc.).
 
 ```bash
-bash /home/guigui/agents/skills/<skill-name>/scripts/<helper>.sh
+bash $HOME/agents/skills/<skill-name>/scripts/<helper>.sh
 ```
 
 ---
@@ -159,7 +159,7 @@ Describe the expected output structure (table, JSON, prose, etc.).
 "Example user prompt"
 
 ### Expected Action Chain
-1. Run `bash /home/guigui/agents/skills/<skill-name>/scripts/<helper>.sh`
+1. Run `bash $HOME/agents/skills/<skill-name>/scripts/<helper>.sh`
 2. Parse output.
 3. Render result.
 

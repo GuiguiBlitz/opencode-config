@@ -49,7 +49,7 @@ Credentials are expected as environment variables:
 Authenticate by running the auth script:
 
 ```bash
-bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh
+bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh
 ```
 
 The script sets `command_line` mode, enables encryption fallback, and logs in
@@ -216,26 +216,26 @@ fab api <endpoint> -A azure                   # Azure Resource Manager audience
 
 ### Scenario 1: Explore / list workspaces or items
 
-1. Run `bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh`
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. Run the appropriate `fab ls` or `fab get` command.
 3. If the user wants to filter by name, use `-q "[?contains(name,'<term>')]"`.
 
 ### Scenario 2: Mutate a workspace (create, rename, delete, assign capacity)
 
-1. Run `bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh`
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. State the exact target and operation to the user. Wait for confirmation if
    the operation is destructive (`rm`, `unassign`, `stop`).
 3. Run the command with `-f`.
 
 ### Scenario 3: Manage ACLs / permissions
 
-1. Run `bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh`
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. Run `fab acl ls <ws>.Workspace` to show current state.
 3. Apply `fab acl set` or `fab acl rm` with the Entra object ID and role.
 
 ### Scenario 4: Run or schedule a job
 
-1. Run `bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh`
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. Use `fab job run` for synchronous execution (waits for completion, returns
    exit code).
 3. Use `fab job start` for async / fire-and-forget.
@@ -243,7 +243,7 @@ fab api <endpoint> -A azure                   # Azure Resource Manager audience
 
 ### Scenario 5: No dedicated subcommand exists
 
-1. Run `bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh`
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. Use `fab api <endpoint>` with appropriate `-X`, `-H`, `-i`, and `-A` flags.
 3. Consult the Fabric REST API docs to confirm the endpoint path and payload.
 
@@ -253,24 +253,24 @@ fab api <endpoint> -A azure                   # Azure Resource Manager audience
 
 ### List all workspaces with details
 ```bash
-bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh
+bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh
 fab ls -l
 ```
 
 ### Pause a Fabric capacity
 ```bash
-bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh
+bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh
 fab stop .capacities/fcapa1.Capacity -f
 ```
 
 ### Grant contributor access to a workspace
 ```bash
-bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh
+bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh
 fab acl set MyWorkspace.Workspace -I <entra-object-id> -R contributor -f
 ```
 
 ### Run a notebook synchronously with a parameter
 ```bash
-bash /home/guigui/agents/skills/fab-cli/scripts/fab-auth.sh
+bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh
 fab job run MyWorkspace.Workspace/MyNotebook.Notebook -P date:string=2024-01-01
 ```
