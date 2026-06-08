@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# Except tracked files and folders
+!.gitignore
+!skills/
+!skills/**
+!opencode.json

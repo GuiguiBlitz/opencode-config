@@ -1,0 +1,48 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "azure": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ],
+      "enabled": true
+    },
+    "microsoft-learn": {
+      "type": "remote",
+      "url": "https://learn.microsoft.com/api/mcp",
+      "enabled": true
+    },
+
+    "drawio": {
+      "type": "local",
+      "command": ["npx", "-y", "drawio-mcp-server", "--editor"],
+      "enabled": true
+    }
+  },
+  "provider": {
+    "llmproxy": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Orange LiteLLM",
+      "options": {
+        "apiKey": "YOUR_API_KEY",
+        "baseURL": "https://llmproxy.ai.orange"
+      },
+      "models": {
+        "vertex_ai/claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6"
+        }
+      }
+    }
+  },
+  "model": "llmproxy/vertex_ai/claude-sonnet-4-6",
+  "skills": {
+    "paths": [
+      "/home/guigui/agents/skills"
+    ]
+  }
+}
