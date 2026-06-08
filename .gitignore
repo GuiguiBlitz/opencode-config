@@ -3,6 +3,7 @@
 
 # Except tracked files and folders
 !.gitignore
+!AGENTS.md
 !skills/
 !skills/**
 !opencode.json
