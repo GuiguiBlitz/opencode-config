@@ -3,7 +3,7 @@
 This repo tracks two things:
 
 - **`skills/`** — agent skills loaded by OpenCode at runtime
-- **`opencode.json`** — sanitized config template (API key redacted)
+- **`tmpl_opencode.json`** — sanitized config template (API key redacted)
 
 ---
 
@@ -12,7 +12,7 @@ This repo tracks two things:
 ```
 .
 ├── AGENTS.md            ← this file
-├── opencode.json        ← config template (apiKey = "YOUR_API_KEY")
+├── tmpl_opencode.json        ← config template (apiKey = "YOUR_API_KEY")
 └── skills/
     ├── <skill-name>/
     │   ├── SKILL.md     ← skill definition loaded by the agent
@@ -26,19 +26,20 @@ and are not versioned here.
 
 ---
 
-## opencode.json
+## tmpl_opencode.json
 
 The live config lives at `~/.config/opencode/opencode.json`.
-This repo holds a copy with `apiKey` replaced by `"YOUR_API_KEY"`.
+This repo holds a sanitized copy named `tmpl_opencode.json` with `apiKey` replaced by `"YOUR_API_KEY"`.
+The file is intentionally **not** named `opencode.json` to avoid being picked up by OpenCode automatically.
 
 **When updating the config:**
 
 1. Edit `~/.config/opencode/opencode.json` as needed.
-2. Copy the change to `opencode.json` in this repo, then redact the key:
+2. Copy the change to `tmpl_opencode.json` in this repo, then redact the key:
    ```bash
-   cp ~/.config/opencode/opencode.json ./opencode.json
+   cp ~/.config/opencode/opencode.json ./tmpl_opencode.json
    # Then set "apiKey": "YOUR_API_KEY" manually or with:
-   sed -i 's/"apiKey": ".*"/"apiKey": "YOUR_API_KEY"/' opencode.json
+   sed -i 's/"apiKey": ".*"/"apiKey": "YOUR_API_KEY"/' tmpl_opencode.json
    ```
 3. Commit and push.
 
@@ -49,7 +50,7 @@ This repo holds a copy with `apiKey` replaced by `"YOUR_API_KEY"`.
 Skills are Markdown files that inject specialized instructions and workflows
 into the agent's context when a matching user intent is detected.
 
-OpenCode loads skills from the path configured in `opencode.json`:
+OpenCode loads skills from the path configured in `tmpl_opencode.json`:
 
 ```json
 "skills": {

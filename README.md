@@ -6,7 +6,7 @@ OpenCode agent configuration: MCP servers, model settings, and skills.
 
 | Path | Purpose |
 |---|---|
-| `opencode.json` | Config template (API key redacted — copy to `~/.config/opencode/opencode.json` and fill in your key) |
+| `tmpl_opencode.json` | Config template (API key redacted — copy to `~/.config/opencode/opencode.json` and fill in your key) |
 | `skills/` | Agent skills loaded at runtime |
 | `AGENTS.md` | Maintenance guide for the agent itself |
 
@@ -24,9 +24,9 @@ OpenCode agent configuration: MCP servers, model settings, and skills.
    git clone https://github.com/GuiguiBlitz/opencode-config.git ~/agents
    ```
 
-2. Copy and configure `opencode.json`:
+2. Copy and configure `tmpl_opencode.json` as your live config:
    ```bash
-   cp ~/agents/opencode.json ~/.config/opencode/opencode.json
+   cp ~/agents/tmpl_opencode.json ~/.config/opencode/opencode.json
    # Edit ~/.config/opencode/opencode.json and set your apiKey
    ```
 
@@ -39,7 +39,7 @@ Each business context (a client, a project, a domain) gets its own folder under 
 ```
 ~/agents/
 ├── skills/          ← shared skills, available to all agents
-├── opencode.json    ← global config template
+├── tmpl_opencode.json    ← global config template
 ├── acme-corp/       ← one folder per business context
 │   └── AGENTS.md   ← context-specific instructions for the agent
 ├── contoso/
