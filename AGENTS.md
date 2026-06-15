@@ -283,17 +283,20 @@ equivalents before the model sees the output.
 
 Full quickstart and Pi integration guide: **[RTK.md](./RTK.md)**
 
-**TL;DR — install and enable for Pi:**
+**TL;DR — install and enable for Pi and OpenCode:**
 
 ```bash
 # 1. Install binary
 brew install rtk-ai/tap/rtk          # Homebrew
 # or: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
 
-# 2. Install Pi extension (global)
+# 2a. Install OpenCode plugin (global)
+rtk init -g --opencode               # writes ~/.config/opencode/plugins/rtk.ts
+
+# 2b. Install Pi extension (global)
 rtk init --agent pi --global         # writes ~/.pi/agent/extensions/rtk.ts
 
-# 3. Restart Pi — then verify
+# 3. Restart the agent — then verify
 rtk gain                              # shows token savings dashboard
 ```
 

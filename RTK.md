@@ -1,4 +1,4 @@
-# RTK — Quickstart for Pi
+# RTK — Quickstart for Pi and OpenCode
 
 [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) is a high-performance CLI proxy that
 reduces LLM token consumption by **60–90%** by filtering and compressing command output before it
@@ -56,7 +56,24 @@ rtk gain        # token savings dashboard (should not error)
 > If `rtk gain` fails, you may have the wrong package. Run `cargo uninstall rtk` and reinstall
 > using the Git URL above.
 
-### 3. Install the Pi extension
+### 3. Install the agent extension
+
+#### OpenCode
+
+**Global (all projects):**
+```bash
+rtk init --global --opencode
+# shorthand:
+rtk init -g --opencode
+```
+→ Writes `~/.config/opencode/plugins/rtk.ts`. Uses the `tool.execute.before` hook.
+
+Uninstall:
+```bash
+rtk init --uninstall --global --opencode
+```
+
+#### Pi
 
 **Global (all Pi projects):**
 ```bash
@@ -71,9 +88,18 @@ rtk init --agent pi
 ```
 → Writes `.pi/extensions/rtk.ts` inside the project
 
-### 4. Restart Pi
+Uninstall:
+```bash
+rtk init --uninstall --agent pi --global   # global
+rtk init --uninstall --agent pi            # project-local
+```
 
-Pi auto-discovers extensions at startup from both `~/.pi/agent/extensions/` and
+### 4. Restart the agent
+
+**OpenCode:** restart the OpenCode session; it auto-discovers plugins from
+`~/.config/opencode/plugins/` on startup.
+
+**Pi:** auto-discovers extensions at startup from both `~/.pi/agent/extensions/` and
 `.pi/extensions/`. No manual config change is needed.
 
 ---
@@ -104,10 +130,13 @@ rtk rewrite "git log -n 10"
 ## Uninstall
 
 ```bash
-# Remove global extension
+# OpenCode (global)
+rtk init --uninstall --global --opencode
+
+# Pi (global)
 rtk init --uninstall --agent pi --global
 
-# Remove project-local extension
+# Pi (project-local)
 rtk init --uninstall --agent pi
 ```
 
@@ -193,18 +222,25 @@ See the [filter DSL reference](https://github.com/rtk-ai/rtk/blob/master/src/fil
 
 ---
 
-## How the Pi Extension Works (Technical)
+## How the Agent Plugins Work (Technical)
 
-The extension (`rtk.ts`) is a thin TypeScript delegate:
+Both integrations are thin TypeScript delegates. All rewrite logic lives in the Rust binary
+(`src/discover/registry.rs`). The hooks are purely thin delegates.
 
-1. On load, it probes `rtk --version` and aborts silently if RTK is missing or too old (< 0.23.0).
-2. It subscribes to Pi's `tool_call` event and narrows to `bash` tool calls via `isToolCallEventType`.
-3. For each command, it calls `rtk rewrite <cmd>` via `pi.exec` with a 2-second timeout.
+### OpenCode plugin (`rtk.ts`)
+
+1. Registers on the `tool.execute.before` hook.
+2. For each `bash` tool call, runs `rtk rewrite <cmd>` with a short timeout.
+3. If RTK returns a rewritten command, the input is mutated in-place before OpenCode executes it.
+4. All error paths are silent — RTK never blocks execution.
+
+### Pi extension (`rtk.ts`)
+
+1. On load, probes `rtk --version` and aborts silently if RTK is missing or too old (< 0.23.0).
+2. Subscribes to Pi's `tool_call` event and narrows to `bash` tool calls via `isToolCallEventType`.
+3. For each command, calls `rtk rewrite <cmd>` via `pi.exec` with a 2-second timeout.
 4. If RTK returns a rewritten command (exit 0 or 3), `event.input.command` is mutated in-place.
 5. All error paths return `undefined` — RTK never blocks execution.
-
-The extension never implements filtering logic itself. All rules live in the Rust binary
-(`src/discover/registry.rs`). The hook is purely a thin delegate.
 
 ---
 
