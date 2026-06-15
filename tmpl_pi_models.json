@@ -1,0 +1,27 @@
+{
+  "providers": {
+    "llmproxy": {
+      "baseUrl": "https://llmproxy.ai.orange",
+      "api": "openai-completions",
+      "apiKey": "YOUR_API_KEY",
+      "authHeader": true,
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "supportsUsageInStreaming": false,
+        "maxTokensField": "max_tokens"
+      },
+      "models": [
+        {
+          "id": "vertex_ai/claude-sonnet-4-6",
+          "name": "Claude Sonnet 4.6",
+          "reasoning": false,
+          "input": ["text", "image"],
+          "contextWindow": 200000,
+          "maxTokens": 16384,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        }
+      ]
+    }
+  }
+}

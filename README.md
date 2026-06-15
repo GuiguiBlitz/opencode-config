@@ -1,13 +1,16 @@
 # opencode-config
 
-OpenCode agent configuration: MCP servers, model settings, and skills.
+Agent configuration for OpenCode and Pi: MCP servers, model settings, and skills.
 
 ## Contents
 
 | Path | Purpose |
 |---|---|
-| `tmpl_opencode.json` | Config template (API key redacted — copy to `~/.config/opencode/opencode.json` and fill in your key) |
-| `skills/` | Agent skills loaded at runtime |
+| `tmpl_opencode.json` | OpenCode config template (API key redacted — copy to `~/.config/opencode/opencode.json`) |
+| `tmpl_pi_models.json` | Pi custom provider/model template (copy to `~/.pi/agent/models.json`) |
+| `tmpl_pi_settings.json` | Pi global settings template (copy to `~/.pi/agent/settings.json`) |
+| `tmpl_pi_mcp.json` | Pi MCP servers template for `pi-mcp-adapter` (copy to `~/.pi/agent/mcp.json`) |
+| `skills/` | Agent skills loaded at runtime by both OpenCode and Pi |
 | `AGENTS.md` | Maintenance guide for the agent itself |
 
 ## Skills
@@ -24,13 +27,58 @@ OpenCode agent configuration: MCP servers, model settings, and skills.
    git clone https://github.com/GuiguiBlitz/opencode-config.git ~/agents
    ```
 
-2. Copy and configure `tmpl_opencode.json` as your live config:
+### OpenCode
+
+2. Copy and configure the template as your live config:
    ```bash
    cp ~/agents/tmpl_opencode.json ~/.config/opencode/opencode.json
    # Edit ~/.config/opencode/opencode.json and set your apiKey
    ```
 
 3. OpenCode will automatically pick up skills from `~/agents/skills/` on next launch.
+
+### Pi
+
+2. Install Pi:
+   ```bash
+   npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+   ```
+
+3. Copy and configure the template files:
+   ```bash
+   mkdir -p ~/.pi/agent
+   cp ~/agents/tmpl_pi_models.json ~/.pi/agent/models.json
+   # Edit ~/.pi/agent/models.json and set your apiKey
+
+   cp ~/agents/tmpl_pi_settings.json ~/.pi/agent/settings.json
+   cp ~/agents/tmpl_pi_mcp.json ~/.pi/agent/mcp.json
+   ```
+
+4. Install the packages (writes into `~/.pi/agent/settings.json` automatically):
+   ```bash
+   pi install npm:context-mode
+   pi install npm:pi-mcp-adapter
+   pi install npm:pi-web-access
+   pi install npm:pi-subagents
+   ```
+
+5. (Optional) Add API keys for web search providers (`pi-web-access`):
+   ```bash
+   # Create ~/.pi/web-search.json with any keys you have:
+   # { "exaApiKey": "exa-...", "perplexityApiKey": "pplx-...", "geminiApiKey": "AIza..." }
+   # Zero-config Exa MCP search works without any keys.
+   ```
+
+6. Restart Pi. Skills from `~/agents/skills/` and all MCP servers load automatically.
+
+#### How MCP works in Pi
+
+Pi has no built-in MCP support. The `pi-mcp-adapter` package provides it. It reads
+`~/.pi/agent/mcp.json` (and optionally `.pi/mcp.json` for project-level overrides) and
+exposes all servers through a single lightweight `mcp` proxy tool. Servers are lazy by
+default — they connect only when first called, not at startup.
+
+Use `/mcp` inside Pi to see server status, toggle direct vs proxy tools, and reconnect servers.
 
 ## Business context workspaces
 

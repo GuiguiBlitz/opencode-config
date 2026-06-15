@@ -1,0 +1,22 @@
+{
+  "settings": {
+    "toolPrefix": "server",
+    "idleTimeout": 10
+  },
+  "mcpServers": {
+    "azure": {
+      "command": "npx",
+      "args": ["-y", "@azure/mcp@latest", "server", "start"],
+      "lifecycle": "lazy"
+    },
+    "microsoft-learn": {
+      "url": "https://learn.microsoft.com/api/mcp",
+      "lifecycle": "lazy"
+    },
+    "drawio": {
+      "command": "npx",
+      "args": ["-y", "drawio-mcp-server", "--editor"],
+      "lifecycle": "lazy"
+    }
+  }
+}

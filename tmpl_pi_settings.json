@@ -1,0 +1,12 @@
+{
+  "defaultProvider": "llmproxy",
+  "defaultModel": "vertex_ai/claude-sonnet-4-6",
+  "skills": ["~/agents/skills"],
+  "packages": [
+    "npm:context-mode",
+    "npm:pi-mcp-adapter",
+    "npm:pi-web-access",
+    "npm:pi-subagents",
+    "npm:rpiv-ask-user-question"
+  ]
+}
