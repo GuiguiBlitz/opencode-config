@@ -7,6 +7,7 @@
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
     "npm:pi-subagents",
-    "npm:rpiv-ask-user-question"
+    "npm:rpiv-ask-user-question",
+    "npm:rpiv-todo"
   ]
 }
