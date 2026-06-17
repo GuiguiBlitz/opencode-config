@@ -186,6 +186,114 @@ fab table vacuum <ws>.Workspace/<lh>.Lakehouse/Tables/<table>          # remove 
 fab table vacuum <ws>.Workspace/<lh>.Lakehouse/Tables/<table> --retain_n_hours 24
 ```
 
+### Git Integration (workspace ↔ ADO repo)
+
+The git connection API is only accessible via `fab api`. The response is
+nested under `.text` in the JSON output — always parse `result.text`, not
+`result` directly.
+
+```bash
+# Get git connection for a single workspace (by ID)
+fab api workspaces/<ws-id>/git/connection
+
+# Key fields in the response (.text):
+#   gitConnectionState      — ConnectedAndInitialized | NotConnected
+#   gitProviderDetails.gitProviderType   — AzureDevOps | GitHub
+#   gitProviderDetails.organizationName
+#   gitProviderDetails.projectName
+#   gitProviderDetails.repositoryName
+#   gitProviderDetails.branchName
+#   gitProviderDetails.directoryName    — folder within the repo
+#   gitSyncDetails.head                 — current commit SHA
+#   gitSyncDetails.lastSyncTime         — ISO timestamp, null if never synced
+```
+
+**Bulk git status sweep across all workspaces** (use this pattern):
+
+```python
+import json, subprocess
+
+# 1. Collect workspace IDs
+out = subprocess.run(['fab', 'ls', '-l', '--output_format', 'json'],
+                     capture_output=True, text=True)
+data = json.loads(out.stdout)
+workspaces = [(w['id'], w['name'].replace('.Workspace', ''))
+              for w in data['result']['data']]
+
+# 2. Query each workspace's git connection
+for ws_id, ws_name in workspaces:
+    r = subprocess.run(
+        ['fab', 'api', f'workspaces/{ws_id}/git/connection'],
+        capture_output=True, text=True)
+    obj = json.loads(r.stdout)
+    text = obj.get('text') or {}           # NOTE: always use .get('text')
+    state = text.get('gitConnectionState', 'unknown')
+    git   = text.get('gitProviderDetails') or {}
+    sync  = text.get('gitSyncDetails') or {}
+    print(ws_name, state,
+          git.get('repositoryName'), git.get('branchName'),
+          git.get('directoryName'), sync.get('lastSyncTime'))
+```
+
+**Connect a workspace to an ADO repo** (POST):
+
+```bash
+fab api workspaces/<ws-id>/git/connect -X post \
+  -H "content-type=application/json" \
+  -i '{
+    "gitProviderDetails": {
+      "gitProviderType": "AzureDevOps",
+      "organizationName": "<ado-org>",
+      "projectName": "<ado-project>",
+      "repositoryName": "<repo-name>",
+      "branchName": "develop",
+      "directoryName": "/<folder>"
+    }
+  }'
+```
+
+**Initialize git connection after connecting** (required once after connect):
+
+```bash
+fab api workspaces/<ws-id>/git/initializeConnection -X post \
+  -H "content-type=application/json" \
+  -i '{"initializationStrategy": "PreferWorkspace"}'
+# InitializationStrategy options:
+#   PreferWorkspace — workspace content wins over repo
+#   PreferRemote    — repo content wins over workspace
+```
+
+**Disconnect a workspace from git**:
+
+```bash
+fab api workspaces/<ws-id>/git/disconnect -X post \
+  -H "content-type=application/json" \
+  -i '{}'
+```
+
+**Get uncommitted changes** (items modified in workspace but not yet committed):
+
+```bash
+fab api workspaces/<ws-id>/git/status
+# Returns list of items with workspaceChange / remoteChange fields
+```
+
+**Update workspace from git** (pull latest from branch):
+
+```bash
+fab api workspaces/<ws-id>/git/updateFromGit -X post \
+  -H "content-type=application/json" \
+  -i '{"remoteCommitHash": "<sha>", "workspaceHead": "<sha>", "conflictResolution": {"conflictResolutionType": "Workspace", "conflictResolutionPolicy": "PreferWorkspace"}}'
+```
+
+**Commit workspace changes to git**:
+
+```bash
+fab api workspaces/<ws-id>/git/commitToGit -X post \
+  -H "content-type=application/json" \
+  -i '{"mode": "All", "comment": "chore: sync workspace items"}'
+```
+
 ### Raw REST API (fallback)
 
 ```bash
@@ -241,7 +349,26 @@ fab api <endpoint> -A azure                   # Azure Resource Manager audience
 3. Use `fab job start` for async / fire-and-forget.
 4. Poll with `fab job run-status` if needed.
 
-### Scenario 5: No dedicated subcommand exists
+### Scenario 5: Inspect or manage workspace git integrations
+
+1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
+2. For a **single workspace**: `fab api workspaces/<ws-id>/git/connection`
+   — parse `.text.gitConnectionState`, `.text.gitProviderDetails`, and
+   `.text.gitSyncDetails` from the response.
+3. For a **bulk sweep across all workspaces**: use `fab ls -l --output_format json`
+   to collect all IDs, then loop with `fab api workspaces/<ws-id>/git/connection`
+   via a Python script (see the Git Integration section above). The `text` key
+   may be `null` for workspaces that have never been connected — guard with
+   `obj.get('text') or {}`.
+4. To **connect** a workspace: POST to `workspaces/<ws-id>/git/connect`, then
+   POST to `workspaces/<ws-id>/git/initializeConnection` with
+   `PreferWorkspace` or `PreferRemote` depending on which side is authoritative.
+5. `gitConnectionState: NotConnected` means no repo is linked.
+   `ConnectedAndInitialized` means fully wired; check `lastSyncTime` to see
+   when it was last synced. A `null` lastSyncTime means connected but never
+   synced (items may not have been committed yet).
+
+### Scenario 6: No dedicated subcommand exists
 
 1. Run `bash $HOME/agents/skills/fab-cli/scripts/fab-auth.sh`
 2. Use `fab api <endpoint>` with appropriate `-X`, `-H`, `-i`, and `-A` flags.
