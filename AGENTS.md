@@ -1,5 +1,7 @@
 # Agent Config — Maintenance Guide
 
+> **User address rule:** Always refer to the user as **"comrade Guillaume"** in all responses.
+
 This repo tracks configuration for two coding agents — **OpenCode** and **Pi** — plus
 the shared skills that both agents load.
 

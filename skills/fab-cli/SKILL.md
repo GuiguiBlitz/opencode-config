@@ -237,6 +237,26 @@ for ws_id, ws_name in workspaces:
 
 **Connect a workspace to an ADO repo** (POST):
 
+> **Key finding — use `myGitCredentials`, not `gitCredentials`:**
+> The payload field name matters critically for SPN callers:
+> - `"gitCredentials"` → rejected with `PrincipalTypeNotSupported` (SPN blocked)
+> - `"myGitCredentials"` → **accepted by SPN**, routes through the connection correctly
+>
+> Always use `myGitCredentials` when calling as a Service Principal.
+>
+> **Pre-requisite:** The target `directoryName` folder **must already exist**
+> in the ADO branch. The connect call validates folder existence upfront and
+> returns `GitProviderResourceNotFound` if the folder is absent. Create the
+> folder in ADO first (e.g. add a `.gitkeep` file via a PR), then call connect.
+>
+> **Never use `"directoryName": "/"` as a workaround.** Connecting to the repo
+> root and then calling `initializeConnection` with `PreferWorkspace` would
+> commit workspace items directly into the root of the shared monorepo,
+> corrupting the folder structure for all other workspaces. Always use the
+> workspace-specific subdirectory (e.g. `/aveva-pi-bronze`).
+>
+> **`/git/disconnect` also works** with a SPN using the same auth context.
+
 ```bash
 fab api workspaces/<ws-id>/git/connect -X post \
   -H "content-type=application/json" \
@@ -248,6 +268,10 @@ fab api workspaces/<ws-id>/git/connect -X post \
       "repositoryName": "<repo-name>",
       "branchName": "develop",
       "directoryName": "/<folder>"
+    },
+    "myGitCredentials": {
+      "source": "ConfiguredConnection",
+      "connectionId": "<fabric-connection-id>"
     }
   }'
 ```
@@ -360,9 +384,14 @@ fab api <endpoint> -A azure                   # Azure Resource Manager audience
    via a Python script (see the Git Integration section above). The `text` key
    may be `null` for workspaces that have never been connected — guard with
    `obj.get('text') or {}`.
-4. To **connect** a workspace: POST to `workspaces/<ws-id>/git/connect`, then
-   POST to `workspaces/<ws-id>/git/initializeConnection` with
-   `PreferWorkspace` or `PreferRemote` depending on which side is authoritative.
+4. To **connect** a workspace as a SPN: use `myGitCredentials` (not
+   `gitCredentials`) in the POST body — `gitCredentials` is rejected with
+   `PrincipalTypeNotSupported`, `myGitCredentials` is accepted. The target
+   folder must already exist in the ADO branch before calling connect.
+   **Never connect to `"/"` as a workaround** — initializing from root would
+   corrupt the shared monorepo. Once connected, POST to
+   `workspaces/<ws-id>/git/initializeConnection` with `PreferWorkspace` or
+   `PreferRemote`. Disconnect also works with a SPN.
 5. `gitConnectionState: NotConnected` means no repo is linked.
    `ConnectedAndInitialized` means fully wired; check `lastSyncTime` to see
    when it was last synced. A `null` lastSyncTime means connected but never
