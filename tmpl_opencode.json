@@ -44,16 +44,23 @@
         "vertex_ai/claude-haiku-4-5": {
           "name": "Claude Haiku 4.5"
         },
-        "vertex_ai/gemini-3.1-flash-lite": {
-          "name": "Gemini 3.1 Flash Lite"
+        "vertex_ai/claude4-sonnet": {
+          "name": "Claude Sonnet 4.0"
+        },
+        "openai/gpt-5.4": {
+          "name": "GPT 5.4"
+        },
+        "openai/gpt-5.4-mini":{
+         "name": "GPT 5.4 mini"
         }
       }
     }
   },
-  "model": "llmproxy/vertex_ai/claude-sonnet-4-6",
+  "model": "llmproxy/openai/gpt-5.4",
   "skills": {
     "paths": [
       "{env:HOME}/agents/skills"
     ]
-  }
+  },
+  "plugin": ["compound-engineering@git+https://github.com/EveryInc/compound-engineering-plugin.git"]
 }
