@@ -333,6 +333,78 @@ fab api <endpoint> -A storage                 # OneLake storage audience
 fab api <endpoint> -A azure                   # Azure Resource Manager audience
 ```
 
+### Variable Libraries (important notes)
+
+Use these notes whenever you create or update Fabric Variable Libraries via
+REST.
+
+- **Prefer the dedicated VariableLibrary REST endpoints** for create / update /
+  definition reads:
+  - `POST /v1/workspaces/{workspaceId}/variableLibraries`
+  - `POST /v1/workspaces/{workspaceId}/variableLibraries/{variableLibraryId}/updateDefinition`
+  - `POST /v1/workspaces/{workspaceId}/variableLibraries/{variableLibraryId}/getDefinition`
+- **Definition format must be `VariableLibraryV1`.**
+- **Required definition parts** are:
+  - `variables.json`
+  - `settings.json`
+- **Optional definition parts** include:
+  - `valueSets/<name>.json`
+  - `.platform`
+- **Do not invent alternate schemas.** `variables.json` keeps only the default
+  values. Alternative sets belong in `valueSets/<name>.json`.
+- **Value set payloads must use `variableOverrides`, not `variables`.**
+  Correct example:
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/valueSet/1.0.0/schema.json",
+  "name": "TST",
+  "variableOverrides": [
+    {
+      "name": "v_workspace_id",
+      "value": "4eb6c1a0-09af-40d0-8b75-d9fda180773d"
+    }
+  ]
+}
+```
+
+- **Alternative sets should only override values that differ.** If a variable
+  is identical across environments, omit it from `variableOverrides`.
+- **`settings.json` should include `valueSetsOrder`** when you want the UI to
+  display a specific order. Example:
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/settings/1.0.0/schema.json",
+  "valueSetsOrder": [
+    "TST"
+  ]
+}
+```
+
+- **Service principal auth works for VariableLibrary APIs**, but `fab api`
+  alone is not enough for robust verification because these endpoints are often
+  long-running operations.
+- **`getDefinition` is an LRO.** A `202` response is normal. Always capture the
+  `x-ms-operation-id` or `Location` header, then poll:
+  - `GET /v1/operations/<operation-id>` for state
+  - `GET /v1/operations/<operation-id>/result` for the final payload
+- **Do not assume a `202` update means the definition is correct.** After
+  `updateDefinition`, read the definition back through the LRO result and
+  decode the base64 payloads to verify the exact returned content.
+- **Known `fab api` limitation:** for VariableLibrary definition reads,
+  `fab api .../getDefinition -X post` may keep showing only the initial `202`
+  wrapper instead of surfacing the completed result. When you must verify the
+  actual definition, call the REST API directly and follow the LRO flow.
+- **Raw HTTP caveat:** some proxies reject empty POSTs with `411 Length
+  Required`. For `getDefinition`, send a tiny JSON body such as `{}` so the
+  request has a content length.
+- **Practical environment pattern:**
+  - put DEV values in `variables.json`
+  - put TST overrides in `valueSets/TST.json`
+  - keep stable identifiers like `v_source_code` in the default set unless the
+    value really changes between environments
+
 ### Global Flags
 
 | Flag | Purpose |
